@@ -48,7 +48,7 @@ A10_t = @(t) 0;
 phi10_t = @(t) 0.35*pi;
 v100 = @(a) 2*sin(a);
 w100 = 2*pi*1.2*10^12;
-
+n = 10;
 
 ka = -0.1;
 kb = 0.6;
@@ -71,26 +71,27 @@ k89 = kb;
 k98 = ka;
 k910 =kb;
 k109 = ka;
-
+wa = 2*pi*1*10^12;
+wb = 2*pi*1.2*10^12;
+w = zeros(n,1);
+for i = 1:n
+    if mod(i,2) == 1
+        w(i) = wa; 
+    else
+        w(i) = wb; 
+    end
+end
+k = zeros(n);
+for i = 1:n-1
+    k(i,i+1) = kb;
+    k(i+1,i) = ka;
+end
 
 k_time = 4;
 tend = k_time * 40*10^-12;
 tspan = 0 : tend/10^4/4/k_time : tend;
-y0 = [phi1_t(0); phi2_t(0); phi3_t(0); phi4_t(0); phi5_t(0); phi6_t(0); phi7_t(0); phi8_t(0); phi9_t(0); phi10_t(0)];
-
-[t,y] = ode78(@(t,y) ...
-    [ ...
-    w10 - w10 * k21 * sin(y(1) - y(2)); ...
-    w20 - w20 * k12 * sin(y(2) - y(1)) - w20 * k32 * sin(y(2) - y(3)); ...
-    w30 - w30 * k23 * sin(y(3) - y(2)) - w30 * k43 * sin(y(3) - y(4)); ...
-    w40 - w40 * k34 * sin(y(4) - y(3)) - w40 * k54 * sin(y(4) - y(5));...
-    w50 - w50 * k45 * sin(y(5) - y(4)) - w50 * k65 * sin(y(5) - y(6));...
-    w60 - w60 * k56 * sin(y(6) - y(5)) - w60 * k76 * sin(y(6) - y(7));...
-    w70 - w70 * k67 * sin(y(7) - y(6)) - w70 * k87 * sin(y(7) - y(8));...
-    w80 - w80 * k78 * sin(y(8) - y(7)) - w80 * k98 * sin(y(8) - y(9));...
-    w90 - w90 * k89 * sin(y(9) - y(8)) - w90 * k109 * sin(y(9) - y(10));...
-    w100 - w100 * k910 * sin(y(10) - y(9))...
-    ] ...
+y0 = 0.5*pi*rand(10,1);
+[t,y] = ode78(@(t,y)get_func(t,y,w,k,n) ...
     , tspan, y0);
 
 figure()
@@ -110,7 +111,7 @@ plot(t, y(:,7),'-',LineWidth=1)
 plot(t, y(:,8)  ,'-',LineWidth=1)
 plot(t, y(:,9),'-',LineWidth=1)
 plot(t, y(:,10)  ,'-',LineWidth=1)
-legend('phase of y1','phase of y2','phase of y3','phase of y4','phase of y5','phase of y6','phase of y7','phase of y8','phase of y9','phase of y10')
+legend('phase of y1','phase of y2','phase of y3','phase of y4','phase of y5','phase of y6','phase of y7','phase of y8','phase of y9')
 figure()
 hold on
 %plot(t,mod(y(:,1)-y(:,2), 2*pi ))
@@ -150,4 +151,19 @@ title('difference betwen pairs')
 
 
 
+function func = get_func(t,y,w,k,n)
+    func= zeros(n,1);
+    for i = 1:n
+        if i == 1
+            func(1)= w(1) - w(1) * k(2,1) * sin(y(1) - y(2));
+        elseif i < n
+            func(i) = w(i) - w(i) * k(i-1,i) * sin(y(i) - y(i-1)) - w(i) * k(i+1,i) * sin(y(i) - y(i+1));
+        else
+            func(n) = w(i) - w(i) * k(i-1,i) * sin(y(i) - y(i-1));
+        end
+        
+    end
+    %disp(ccc)
+    %func = str2func(strjoin(ccc, ';'));
+end
 

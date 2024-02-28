@@ -12,21 +12,44 @@ u = @(t,y)[ ...
     w90 - w90 * k89 * sin(y(9) - y(8)) - w90 * k109 * sin(y(9) - y(10));...
     w100 - w100 * k910 * sin(y(10) - y(9))...
     ];
-ccc = 1;
-for i = 1:9
-    ccc = [ccc; 1];
-end
-v = @(t,y) ccc;
-w = ones(10,1);
-k = ones(10);
-for i = 1:10
+
+
+n = 10;
+w = ones(n,1);
+k = ones(n);
+ccc= cell(n,1);
+for i = 1:n
     if i == 1
-        v(1) = @(t,y) w(1) - w(1) * k(2,1) * sin(y(1) - y(2));
-    elseif i < 10
-        v(i) = @(t,y) w(i) - w(i) * k(i - 1, i) * sin(y(i) - y(i - 1)) - w(i) * k(i + 1, i) * sin(y(i) - y(i + 1));
+        ccc{i} = strcat('@(t,y)','[',give_w(i), '-', give_w(i), '*', give_k(i+1,i), '*', 'sin(', give_y(i), '-', give_y(i+1), ');');
+    elseif i < n
+        ccc{i} = strcat(give_w(i), '-', give_w(i), '*', give_k(i+1,i), '*', 'sin(', give_y(i), '-', give_y(i+1), ');', '-', give_w(i), '*', give_k(i-1,i), '*', 'sin(', give_y(i), '-', give_y(i-1), ');');
     else
+        ccc{i} = strcat(give_w(i), '-', give_w(i), '*', give_k(i-1,i), '*', 'sin(', give_y(i), '-', give_y(i-1), ');]');
     end
+    
+end
+disp(ccc)
+new_func = str2func(strjoin(ccc, ';'));
+
+function str = give_w(i)
+    p1 = 'w(';
+    p2 = num2str(i);
+    p3 = ')';
+    str = [p1 , p2 , p3];
 end
 
+function str = give_y(i)
+    p1 = 'y(';
+    p2 = num2str(i);
+    p3 = ')';
+    str = [p1 , p2 , p3];
+end
 
-
+function str = give_k(i,j)
+    p1 = 'k(';
+    p2 = num2str(i);
+    p3 = ',';
+    p4 = num2str(j);
+    p5 = ')';
+    str = [p1 , p2 , p3, p4 , p5];
+end
