@@ -1,5 +1,5 @@
 close all
-
+n = 40;
 ka = -0.1;
 kb = 0.6;
 
@@ -21,16 +21,20 @@ for i = 1:n-1
     k(i+1,i) = ka;
 end
 
+
+k(2,1) = 0;
+
 k_time = 4;
 tend = k_time * 40*10^-12;
 tspan = 0 : tend/10^4/4/k_time : tend;
 
 %give a ramdom initial phase
-y0 = 0.5*pi*rand(10,1);
-
+y0 = 0.5*pi*rand(n,1);
+y0(1) = 0;
 [t,y] = ode78(@(t,y)get_func(t,y,w,k,n) ...
     , tspan, y0);
 
+reference = 1;
 
 figure()
 hold on
@@ -43,10 +47,16 @@ xlabel('time(s)')
 ylabel('phase(rad)')
 set(gca, 'linewidth', 1.1, 'fontsize', 16, 'fontname', 'times')
 
+if n > 20
+    plot_number = 20;
+else
+    plot_number = n;
+end
+plot_number = 10;
 figure()
 hold on
-for i = 1:n/2
-    plot(t,mod(y(:,1)-y(:,2*i), 2*pi ),'-',LineWidth=1,DisplayName=strcat('phase difference 1,',num2str(2*i)));
+for i = 1:plot_number /2
+    plot(t,mod(y(:,reference)-y(:,2*i), 0 ),'-',LineWidth=1,DisplayName=strcat("phase difference ",num2str(reference),", ",num2str(2*i)));
 end
 
 legend
@@ -54,11 +64,10 @@ xlabel('time(s)')
 ylabel('phase(rad)')
 set(gca, 'linewidth', 1.1, 'fontsize', 16, 'fontname', 'times')
 
-figure()
-hold on
-hold on
-for i = 1:n/2-1
-    plot(t,mod(y(:,1)-y(:,2*i+1), 2*pi ),'-',LineWidth=1,DisplayName=strcat('phase difference 1,',num2str(2*i+1)));
+
+
+for i = 1:plot_number /2-1
+    plot(t,mod(y(:,2)-y(:,2*i+1), 0),'-',LineWidth=1,DisplayName=strcat("phase difference ",num2str(reference),", ",num2str(2*i+1)));
 end
 legend
 xlabel('time(s)')
@@ -67,16 +76,16 @@ set(gca, 'linewidth', 1.1, 'fontsize', 16, 'fontname', 'times')
 
 figure()
 hold on
-for i = 1:n/2
-    if i == 1
-        plot(t,mod(y(:,1)-y(:,2*i), 2*pi ),'-',LineWidth=1,DisplayName=strcat('phase difference 1,',num2str(2*i)));
-    else
-        plot(t,mod(y(:,2*(i-1))-y(:,2*i), 2*pi ),'-',LineWidth=1,DisplayName=strcat("phase difference"+" ",num2str(2*(i-1)),', ' ,num2str(2*i)));
-
-    end
+for i = reference:plot_number-1
+        plot(t,mod(y(:,i)-y(:,i+1), 0),'-',LineWidth=1,DisplayName=strcat("phase difference"+" ",num2str(i),', ' ,num2str(i+1)));
 end
 
-plot(t,asin((w10-w20)/(w10*ka+w20*kb))*ones(size(t))+2*pi,LineWidth=2,DisplayName='theoretical value')
+%plot(t,asin((wa-wb)/(wb*kb))*ones(size(t)),'k',LineWidth=2,DisplayName='theoretical value1')
+%plot(t,asin((wa-wb)*ka/(wb*kb^2))*ones(size(t)),LineWidth=2,DisplayName='theoretical value2')
+%plot(t,asin((wa-wb)*(1+ka^2/kb^2)/(wb*kb))*ones(size(t)),LineWidth=2,DisplayName='theoretical value3')
+disp(asin((wa-wb)/(wb*kb)))
+disp(asin((wa-wb)*ka/(wb*kb^2)))
+disp(asin((wa-wb)*(1+ka^2/kb^2)/(wb*kb)))
 legend
 xlabel('time(s)')
 ylabel('phase(rad)')
