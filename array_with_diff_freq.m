@@ -1,5 +1,5 @@
 close all
-n = 40;
+n = 20;
 ka = -0.1;
 kb = 0.6;
 
@@ -21,8 +21,10 @@ for i = 1:n-1
     k(i+1,i) = ka;
 end
 
+for i = 1:n/2
+    k(2*i,2*i-1)=0;
+end
 
-k(2,1) = 0;
 
 k_time = 4;
 tend = k_time * 40*10^-12;
