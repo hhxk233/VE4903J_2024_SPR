@@ -16,10 +16,7 @@ for i = 1:n
 end
 % here set k(interaction)
 k = zeros(n);
-for i = 1:n-1
-    k(i,i+1) = kb;
-    k(i+1,i) = ka;
-end
+k = link_osc_all_ka_kb(k,n,ka,kb);
 
 for i = 1:n/2
     k(2*i,2*i-1)=0;
@@ -33,8 +30,7 @@ tspan = 0 : tend/10^4/4/k_time : tend;
 %give a ramdom initial phase
 y0 = 0.5*pi*rand(n,1);
 y0(1) = 0;
-[t,y] = ode78(@(t,y)get_func(t,y,w,k,n) ...
-    , tspan, y0);
+[t,y] = ode78(@(t,y)get_func(t,y,w,k,n), tspan, y0);
 
 reference = 1;
 
@@ -95,19 +91,5 @@ title('difference betwen pairs')
 set(gca, 'linewidth', 1.1, 'fontsize', 16, 'fontname', 'times')
 
 
-function func = get_func(t,y,w,k,n)
-    func= zeros(n,1);
-    for i = 1:n
-        if i == 1
-            func(1)= w(1) - w(1) * k(2,1) * sin(y(1) - y(2));
-        elseif i < n
-            func(i) = w(i) - w(i) * k(i-1,i) * sin(y(i) - y(i-1)) - w(i) * k(i+1,i) * sin(y(i) - y(i+1));
-        else
-            func(n) = w(i) - w(i) * k(i-1,i) * sin(y(i) - y(i-1));
-        end
-        
-    end
-    %disp(ccc)
-    %func = str2func(strjoin(ccc, ';'));
-end
+
 
